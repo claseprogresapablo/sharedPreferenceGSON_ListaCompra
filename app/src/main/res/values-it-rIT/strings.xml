@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">06Ejer_Lista_Compra_RecyclerView</string>
+    <string name="alert_title_crear">creare nouvo prodotto</string>
+    <string name="hint_nombre_producto">Nome prodotto</string>
+    <string name="hint_cantidad_producto">Quantitá Prodotto</string>
+    <string name="hint_precio_producto">Prezzo Prodotto</string>
+    <string name="action_settings" translatable="false">settings</string>
+    <string name="btn_alert_cancel">Cancelare</string>
+    <string name="btn_alert_crear">Creare</string>
+</resources>

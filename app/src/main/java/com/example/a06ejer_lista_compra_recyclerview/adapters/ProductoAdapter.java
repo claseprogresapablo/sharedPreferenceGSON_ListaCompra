@@ -83,8 +83,6 @@ public class ProductoAdapter extends RecyclerView.Adapter<ProductoAdapter.Produc
             }
         });
 
-
-
     }
 
     private AlertDialog editarProducto(String mensaje, Producto p) {

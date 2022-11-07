@@ -2,12 +2,15 @@ package com.example.a06ejer_lista_compra_recyclerview;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.res.Configuration;
 import android.os.Bundle;
 
 import com.example.a06ejer_lista_compra_recyclerview.adapters.ProductoAdapter;
 import com.example.a06ejer_lista_compra_recyclerview.modelos.Producto;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -42,11 +45,16 @@ public class MainActivity extends AppCompatActivity {
 
         productosList = new ArrayList<>();
         //crearTodos();
-        
+
+        int columnas;
+        //HORIZONTAL -> 2
+        //VERTICAL -> 1
+        //DESDE LAS CONFIGURACIONES DE LA ACTIVIDAD -> orientation // PORTRAIT(V) / LANDSCAPE(H)
+         columnas = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT ? 1 : 2; //OPERADOR TERNARIO
         //linkear main con adapter(no se dice así pero me aclaro)
         adapter = new ProductoAdapter(productosList,R.layout.productos_view_model,MainActivity.this);
         binding.contentMain.contenedor.setAdapter(adapter);
-        layoutManager = new LinearLayoutManager(MainActivity.this);
+        layoutManager = new GridLayoutManager(MainActivity.this, columnas);
         binding.contentMain.contenedor.setLayoutManager(layoutManager);
         
 
@@ -55,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
 
 
-                crateProducto("CREAR PRODUCTO").show();
+                crateProducto(getString(R.string.alert_title_crear)).show();
 
 
 
@@ -133,8 +141,8 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        builder.setNegativeButton("CANCELAR",null);
-        builder.setPositiveButton("AGREGAR", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(getString(R.string.btn_alert_cancel),null);
+        builder.setPositiveButton(getString(R.string.btn_alert_crear), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
 
@@ -142,8 +150,9 @@ public class MainActivity extends AppCompatActivity {
                     Producto p = new Producto(txtNombre.getText().toString(),
                             Float.parseFloat(txtPrecio.getText().toString()),
                             Integer.parseInt(txtCantidad.getText().toString()));
-                    productosList.add(p);
-                    adapter.notifyDataSetChanged();
+                    productosList.add(0,p);//asi añade al principio
+                    adapter.notifyItemInserted(0); //muy importante esto npara que lo muestre
+                    //adapter.notifyDataSetChanged();
                 } else {
                     Toast.makeText(MainActivity.this, "FALTAN DATOS", Toast.LENGTH_SHORT).show();
                 }
@@ -156,6 +165,29 @@ public class MainActivity extends AppCompatActivity {
         return builder.create();
 
 
+    }
+
+
+    /**
+     * Se dispara ANTES de que se elimine la actividad
+     * @param outState -> guardo los datos
+     */
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable("LISTA",productosList);
+    }
+
+    /**
+     * Se dispara despues de crear la actividad nueva
+     * @param savedInstanceState -> recupero los datos
+     */
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        ArrayList<Producto> tem = (ArrayList<Producto>) savedInstanceState.getSerializable("LISTA");
+        productosList.addAll(tem);
+        adapter.notifyItemRangeInserted(0,productosList.size());
     }
 
     private void crearTodos() {

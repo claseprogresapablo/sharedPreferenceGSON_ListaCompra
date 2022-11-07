@@ -1,6 +1,8 @@
 package com.example.a06ejer_lista_compra_recyclerview.modelos;
 
-public class Producto {
+import java.io.Serializable;
+
+public class Producto implements Serializable {
 
     private String nombre;
     private float precio;
