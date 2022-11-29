@@ -3,8 +3,10 @@ package com.example.a06ejer_lista_compra_recyclerview.adapters;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,8 +17,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.a06ejer_lista_compra_recyclerview.Constantes;
+import com.example.a06ejer_lista_compra_recyclerview.MainActivity;
 import com.example.a06ejer_lista_compra_recyclerview.R;
 import com.example.a06ejer_lista_compra_recyclerview.modelos.Producto;
+import com.google.gson.Gson;
 
 import java.text.NumberFormat;
 import java.util.List;
@@ -28,11 +33,18 @@ public class ProductoAdapter extends RecyclerView.Adapter<ProductoAdapter.Produc
     private Context context;
 
 
+    private SharedPreferences sharedPreferences;
+    private Gson gson;
+
+
 
     public ProductoAdapter(List<Producto> objects, int resource, Context context) {
         this.objects = objects;
         this.resource = resource;
         this.context = context;
+
+        sharedPreferences = context.getSharedPreferences(Constantes.DATOS, context.MODE_PRIVATE);
+        gson = new Gson();
     }
 
     /**
@@ -70,6 +82,7 @@ public class ProductoAdapter extends RecyclerView.Adapter<ProductoAdapter.Produc
                 confirmarDelete("Estas Seguro que quioeres eliminar?",producto).show();
 
 
+
             }
         });
 
@@ -79,6 +92,8 @@ public class ProductoAdapter extends RecyclerView.Adapter<ProductoAdapter.Produc
 
 
                 editarProducto(producto.getNombre(),producto).show();
+
+
 
             }
         });
@@ -168,6 +183,8 @@ public class ProductoAdapter extends RecyclerView.Adapter<ProductoAdapter.Produc
                 p.setPrecio(Float.parseFloat(txtPrecio.getText().toString()));
                 p.setImporteTotal(Integer.parseInt(txtCantidad.getText().toString()) * Float.parseFloat(txtPrecio.getText().toString()));
                 notifyDataSetChanged();
+                guardarEnSP(); //SHARED OREFERENCE
+
             }
         });
 
@@ -188,6 +205,8 @@ public class ProductoAdapter extends RecyclerView.Adapter<ProductoAdapter.Produc
             public void onClick(DialogInterface dialogInterface, int i) {
                 objects.remove(p);
                 notifyDataSetChanged();
+                guardarEnSP(); //SHARED OREFERENCE
+
             }
         });
 
@@ -198,6 +217,18 @@ public class ProductoAdapter extends RecyclerView.Adapter<ProductoAdapter.Produc
     public int getItemCount() {
         return objects.size();
     }
+
+
+    private void guardarEnSP() {
+        String contactosSTR = gson.toJson(objects);
+        Log.d("JSON", contactosSTR);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(Constantes.COMPRA, contactosSTR);
+        editor.apply();
+    }
+
+
+
 
     /**
      * OBJETO QUE SI INSTANCIA CADA QVEZ QUE TENGA QUE MONSTRAR UN PRODUCTO EN EL RECYCLER

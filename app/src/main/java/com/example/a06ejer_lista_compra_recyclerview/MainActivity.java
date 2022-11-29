@@ -2,6 +2,7 @@ package com.example.a06ejer_lista_compra_recyclerview;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 
@@ -16,23 +17,31 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 
 import com.example.a06ejer_lista_compra_recyclerview.databinding.ActivityMainBinding;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.lang.reflect.Type;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
-    private ArrayList<Producto> productosList;
+    private static ArrayList<Producto> productosList;
     private ProductoAdapter adapter;
     private RecyclerView.LayoutManager layoutManager;
+    private static SharedPreferences sharedPreferences;
+    private static Gson gson;
+
 
 
     @Override
@@ -52,24 +61,56 @@ public class MainActivity extends AppCompatActivity {
         //DESDE LAS CONFIGURACIONES DE LA ACTIVIDAD -> orientation // PORTRAIT(V) / LANDSCAPE(H)
          columnas = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT ? 1 : 2; //OPERADOR TERNARIO
         //linkear main con adapter(no se dice así pero me aclaro)
+
         adapter = new ProductoAdapter(productosList,R.layout.productos_view_model,MainActivity.this);
         binding.contentMain.contenedor.setAdapter(adapter);
         layoutManager = new GridLayoutManager(MainActivity.this, columnas);
         binding.contentMain.contenedor.setLayoutManager(layoutManager);
-        
+
+
+        sharedPreferences = getSharedPreferences(Constantes.DATOS,MODE_PRIVATE);
+        gson = new Gson();
+        cargarDatos();
 
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-
                 crateProducto(getString(R.string.alert_title_crear)).show();
-
-
 
             }
         });
+
+
     }
+
+
+    private void cargarDatos(){
+
+
+        if (sharedPreferences.contains(Constantes.COMPRA) && !sharedPreferences.getString(Constantes.COMPRA, "").isEmpty()){
+
+            String compraSTR = sharedPreferences.getString(Constantes.COMPRA, "");
+            Type tipo = new TypeToken< ArrayList<Producto> >(){}.getType();
+            List<Producto> pro = new Gson().fromJson(compraSTR, tipo); // esto crea un arrayList a partir de los datos del json de las sp
+            productosList.clear();
+            productosList.addAll(pro);
+            adapter.notifyItemRangeInserted(0,productosList.size());
+        }
+
+
+    }
+
+    private void guardarEnSP() {
+        String contactosSTR = gson.toJson(productosList);
+        Log.d("JSON", contactosSTR);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(Constantes.COMPRA, contactosSTR);
+        editor.apply();
+    }
+
+
+
 
     private AlertDialog crateProducto(String titulo) {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -153,6 +194,7 @@ public class MainActivity extends AppCompatActivity {
                     productosList.add(0,p);//asi añade al principio
                     adapter.notifyItemInserted(0); //muy importante esto npara que lo muestre
                     //adapter.notifyDataSetChanged();
+                    guardarEnSP();
                 } else {
                     Toast.makeText(MainActivity.this, "FALTAN DATOS", Toast.LENGTH_SHORT).show();
                 }
@@ -166,6 +208,14 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
+
+
+
+
+
+
+
 
 
     /**

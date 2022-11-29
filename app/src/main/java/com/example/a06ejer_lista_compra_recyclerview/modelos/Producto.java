@@ -16,6 +16,9 @@ public class Producto implements Serializable {
         importeTotal = precio*cantidad;
     }
 
+    public Producto() {
+    }
+
     private void actualizaTotal(){
         this.importeTotal = this.precio*this.cantidad;
     }
